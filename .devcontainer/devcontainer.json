@@ -1,0 +1,26 @@
+{
+  "name": "mjolnir",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=claude-code-config,target=/home/vscode/.claude,type=volume"
+  ],
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/home/vscode/.claude",
+    "GIT_USERNAME": "Reinier Kip",
+    "GIT_EMAIL": "dev@rjkip.nl"
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-vscode-remote.remote-containers"]
+    }
+  }
+}
