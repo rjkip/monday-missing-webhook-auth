@@ -14,6 +14,9 @@ const redact = (headers) =>
     ),
   );
 
+// Infrastructure headers added by Netlify's edge; stored but not displayed.
+const HIDDEN_HEADER = /^(netlify-|x-nf-|x-request-start|traceparent|cdn-loop|x-country|x-forwarded-)/i;
+
 const pretty = (body) => {
   try {
     return JSON.stringify(JSON.parse(body), null, 2);
@@ -37,7 +40,7 @@ export default async (req) => {
       .map(
         (e) => `<section>
 <h2>${escape(e.timestamp)} &middot; ${escape(e.method)} ${escape(e.url)}</h2>
-<pre>${escape(Object.entries(redact(e.headers)).map(([k, v]) => `${k}: ${v}`).join("\n"))}</pre>
+<pre>${escape(Object.entries(redact(e.headers)).filter(([k]) => !HIDDEN_HEADER.test(k)).map(([k, v]) => `${k}: ${v}`).join("\n"))}</pre>
 <pre>${escape(pretty(e.body)) || "<i>(empty body)</i>"}</pre>
 </section>`,
       )
