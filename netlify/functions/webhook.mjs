@@ -6,6 +6,14 @@ const IGNORED = /^\/(favicon\.ico|robots\.txt|sitemap\.xml|apple-touch-icon.*\.p
 const escape = (s) =>
   String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
+// Don't keep full credentials: trim authorization-like header values.
+const redact = (headers) =>
+  Object.fromEntries(
+    Object.entries(headers).map(([k, v]) =>
+      /authorization/i.test(k) && v.length > 10 ? [k, `${v.slice(0, 10)}...`] : [k, v],
+    ),
+  );
+
 const pretty = (body) => {
   try {
     return JSON.stringify(JSON.parse(body), null, 2);
@@ -29,7 +37,7 @@ export default async (req) => {
       .map(
         (e) => `<section>
 <h2>${escape(e.timestamp)} &middot; ${escape(e.method)} ${escape(e.url)}</h2>
-<pre>${escape(Object.entries(e.headers).map(([k, v]) => `${k}: ${v}`).join("\n"))}</pre>
+<pre>${escape(Object.entries(redact(e.headers)).map(([k, v]) => `${k}: ${v}`).join("\n"))}</pre>
 <pre>${escape(pretty(e.body)) || "<i>(empty body)</i>"}</pre>
 </section>`,
       )
@@ -57,7 +65,7 @@ ${items || "<p>No requests yet.</p>"}`,
     timestamp,
     method: req.method,
     url: req.url,
-    headers: Object.fromEntries(req.headers),
+    headers: redact(Object.fromEntries(req.headers)),
     body,
   });
 
